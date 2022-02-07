@@ -1,8 +1,6 @@
 #include "keyLine.h"
 #include <stddef.h>
 
-
-
 pKeyLineUpdataCallback g_pKeyLineUpdataCallback = NULL;
 
 static uint8_t keyLineHoldCntMs = 0; 
@@ -12,8 +10,11 @@ void keyLine_init(pKeyLineUpdataCallback pFunc)
     if(pFunc != NULL) g_pKeyLineUpdataCallback = pFunc;
 }
 
-
-//@@@ K线键值采样处理
+/*****************************************
+ * K线键值采样处理
+ * 1ms调用一次
+ * 
+ * ***************************************/
 void Task_scan_keyLine(void)
 {
     static uint8_t keylineIO_last,keyLineStatue_last;
@@ -27,8 +28,7 @@ void Task_scan_keyLine(void)
     }
     else 
     {
-        keyLineHoldCntMs ++; 
-        keyLineHoldCntMs &= 0X7F;               //防止溢出
+        if(++keyLineHoldCntMs > 0x80)keyLineHoldCntMs = 0X80;               //防止溢出
     }
 
     if(++scanCycleCnt_50ms > 50)

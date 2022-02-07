@@ -17,8 +17,6 @@ static void TaskProcess(void);
 static void TaskRemarking(void);
 
 
-uint8_t cntcccf=0;
-
 pKeyLineUpdataCallback keyLineUpdataCallback(void);
 uint8_t tr_delay;				 //K线信号转化输出延时
 void Task_IOtest(void);
@@ -135,7 +133,7 @@ typedef struct
 	uint8_t ItvTimes;					//任务间隔时间
 	void (*TaskHook)(void);				//任务
 }TASK_COMPONENTS;
-//extern void Task_scan_keyLine();
+
 typedef enum TaskTotalList_EN
 {
 	TASK_CAPTURE_TRIGGER,
@@ -223,7 +221,7 @@ void Task_TRIO_handle(void)
   */
     TIM4_ClearFlag(TIM4_FLAG_UPDATE);
 	TaskRemarking();
-    setMsCntForTriac();
+    IncMsCntForTriac();
  }
 
 

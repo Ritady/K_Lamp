@@ -2,9 +2,12 @@
 #include <stdlib.h>
 
 #define HARDWARTE_ZERO_CHECK_DELAY  8000      //4000*1.5(ms)/100
-#define TRIAC_DRIVER_HOLDE_TIME     4000    //100*10US
+#define TRIAC_DRIVER_HOLDE_TIME     4000      //100*10US
 
 TRIAC_ARG_ST triac;
+/* 
+*	可控硅延时用
+*/
 void KK_TIME2_INIT(void)
 {
 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_TIMER2,ENABLE); // 打开外设时钟
@@ -17,13 +20,9 @@ void KK_TIME2_INIT(void)
 	TIM2_ITConfig(TIM2_IT_UPDATE,ENABLE);        //计数溢出中断
 
 	//TIM2_Cmd(ENABLE);                            //启动定时器
-
-    
     triac.line_check_status = 50;             // powerLine.status = 50;  
 }
-/* 
-*	可控硅延时用
-*/
+
 void KK_Timer2_Change(u16 Time_us)            	 // 0--1000
 {
 	u16 TimeNum_Tmp = 0;
@@ -88,9 +87,9 @@ INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler, 5)
                 else
                 {
                     triac.current_continue = triac.continue_time;
-                    if(triac.level == 0) triac.onoff = 0;
+                    if(triac.level == 0) triac.onoff = SWITCH_ST_OFF;
                 }
-                if(triac.current_continue <= 10) triac.current_continue = 10;
+                if(triac.current_continue < 10) triac.current_continue = 10;
     	        KK_Timer2_Change(triac.current_continue);
             }
         }
@@ -99,7 +98,7 @@ INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler, 5)
             TIM2_Cmd(DISABLE);
         }   
     }   
-    GPIO_WriteReverse(GPIOD,GPIO_PIN_3);
+    GPIO_WriteReverse(GPIOD,GPIO_PIN_3);            //for debug
 }
 
 /**
@@ -114,8 +113,7 @@ INTERRUPT_HANDLER(TIM2_UPD_OVF_BRK_IRQHandler, 13)
     its = TIM2_GetITStatus(TIM2_IT_UPDATE);//its=RESET or SET
     TIM2_ClearITPendingBit(TIM2_IT_UPDATE); //清除中断标志位
     if(its == SET) // 中断发生
-    {
-    	
+    {    	
 		if(triac.lum_st == LUM_CALULATE_ST_HALF_1)
 		{
             GPIO_WriteHigh(GPIOC, GPIO_PIN_7); //打开光耦
@@ -143,7 +141,7 @@ INTERRUPT_HANDLER(TIM2_UPD_OVF_BRK_IRQHandler, 13)
 }
 
 
-void setMsCntForTriac(void)
+void IncMsCntForTriac(void)
 {
     triac.cntMs++;
 }

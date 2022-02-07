@@ -37,7 +37,7 @@ typedef struct
 
 extern TRIAC_ARG_ST triac;
 void KK_TIME2_INIT(void);
-void setMsCntForTriac(void);
+void IncMsCntForTriac(void);
 uint8_t getLineFreq(void);
 void setCommMode(COMM_MODE_ENUM mode);
 COMM_MODE_ENUM getCommMode(void);

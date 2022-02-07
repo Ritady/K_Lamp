@@ -84,7 +84,7 @@ void freameAnalysis()
             }
             else
             {   //校验错误
-
+                
             }
             break;
         }
@@ -131,8 +131,7 @@ void Task_AnalysisFrame(void)
     {
         freameAnalysis();
         setFrameFlag(0);
-    }
-        
+    }       
 }
 
 
