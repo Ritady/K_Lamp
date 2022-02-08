@@ -1,7 +1,5 @@
 #include "protocol.h"
 
-
-static uint8_t seq = 0;
 uint16_t checksum_calculate(uint8_t* buff,uint8_t length);
 void code_buffer_to_send(uint8_t* payload,uint8_t len,uint8_t seq);
 uint8_t framebuff[32];

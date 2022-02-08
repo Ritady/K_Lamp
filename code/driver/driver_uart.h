@@ -14,7 +14,7 @@ typedef struct
 
 uint8_t getFrameFlag(void);
 void setFrameFlag(uint8_t flag);
-uint8_t rxdata_copy_extract(uint8_t* desBuff);
+void rxdata_copy_extract(uint8_t* desBuff);
 void uart1_send_buff(uint8_t* buff,uint8_t length);
 #endif
 

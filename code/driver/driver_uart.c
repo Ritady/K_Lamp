@@ -48,7 +48,7 @@ INTERRUPT_HANDLER(UART1_RX_IRQHandler, 18)
    }  
 }
 
-uint8_t rxdata_copy_extract(uint8_t* desBuff)
+void rxdata_copy_extract(uint8_t* desBuff)
 {
      memcpy(desBuff,rxdata.rxbuff,rxdata.length);
 }

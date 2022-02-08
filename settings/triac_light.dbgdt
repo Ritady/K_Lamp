@@ -757,7 +757,7 @@
                     <item>capture</item>
                     <item>g_dimmer_st</item>
                     <item>powerLine</item>
-                    <item></item>
+                    <item />
                 </expressions>
                 <col-names>
                     <item>Expression</item>

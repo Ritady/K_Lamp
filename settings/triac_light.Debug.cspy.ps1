@@ -23,9 +23,9 @@
 
 if ($debugfile -eq "")
 {
-& "D:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "E:\zhengzh\Project\triac\PROGRAM\settings\triac_light.Debug.general.xcl" --backend -f "E:\zhengzh\Project\triac\PROGRAM\settings\triac_light.Debug.driver.xcl" 
+& "D:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "E:\zhengzh\Project\triac\PROGRAM1\K_Lamp\settings\triac_light.Debug.general.xcl" --backend -f "E:\zhengzh\Project\triac\PROGRAM1\K_Lamp\settings\triac_light.Debug.driver.xcl" 
 }
 else
 {
-& "D:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "E:\zhengzh\Project\triac\PROGRAM\settings\triac_light.Debug.general.xcl" --debug_file=$debugfile --backend -f "E:\zhengzh\Project\triac\PROGRAM\settings\triac_light.Debug.driver.xcl" 
+& "D:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "E:\zhengzh\Project\triac\PROGRAM1\K_Lamp\settings\triac_light.Debug.general.xcl" --debug_file=$debugfile --backend -f "E:\zhengzh\Project\triac\PROGRAM1\K_Lamp\settings\triac_light.Debug.driver.xcl" 
 }
