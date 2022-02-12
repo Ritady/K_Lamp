@@ -10,7 +10,7 @@
 #define SIZE_64                             64
 
 //***************滤波器配置******************
-#define config_FILTER_BUFFER_SIZE           SIZE_16                     //配置滤波器size  2/4/8/16/32/64
+#define config_FILTER_BUFFER_SIZE           SIZE_64                     //配置滤波器size  2/4/8/16/32/64
 #define config_DELTA_DEBOUNCE_SWITCH        1                           //跳变消抖使能/禁止 打开后变化量大于设定值是视作干扰处理
 #if config_DELTA_DEBOUNCE_SWITCH 
 #define config_MAX_DELTA                    20                          //设置有效的最大变化量

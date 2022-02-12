@@ -146,7 +146,7 @@ typedef enum TaskTotalList_EN
 }TaskList;
 TASK_COMPONENTS TaskComps[TASK_MAX] =
 {
-	{0,5,5,Task_CaptureSampleTrigger},
+	{0,7,7,Task_CaptureSampleTrigger},
 	{0,1,1,Task_scan_keyLine},
 	{0,20,20,Task_TRIO_handle},
 	{0,200,200,Task_IOtest},

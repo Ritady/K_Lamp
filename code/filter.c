@@ -45,7 +45,7 @@ unsigned char linear_smooth(unsigned char entrant)
             filter.AVG = filter.sum >> FILTER_SIZE;
             index++;
             index = index % FILTER_BUFFER_SIZE;
-            avg =filter.AVG;
+            avg = filter.AVG;
         }
         return avg;
     }
