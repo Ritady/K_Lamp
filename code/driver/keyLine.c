@@ -7,6 +7,7 @@ static uint8_t keyLineHoldCntMs = 0;
 void keyLine_init(pKeyLineUpdataCallback pFunc)
 {
     GPIO_Init(KEY_LINE_PORT,KEY_LINE_PIN,GPIO_MODE_IN_FL_NO_IT);        //配置IO口为输入模式，开启内部上拉
+    GPIO_Init(GPIO_TR_OP_PORT,GPIO_TR_OP_PIN,GPIO_MODE_OUT_PP_LOW_FAST);
     if(pFunc != NULL) g_pKeyLineUpdataCallback = pFunc;
 }
 

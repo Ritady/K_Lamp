@@ -20,7 +20,7 @@ void freameAnalysis()
             uint16_t checksum = checksum_calculate(&framebuff[index],pFreame->length);
             if((framebuff[index+pFreame->length -2] == (checksum >> 8)) && (framebuff[index+pFreame->length - 1] == (checksum & 0x00ff)))
             {
-                //if(seq == pFreame->seq) return;
+                if(seq == pFreame->seq) return;
                 seq = pFreame->seq;
                 uint8_t ret;
                 uint8_t length=0;
@@ -33,6 +33,7 @@ void freameAnalysis()
                         {
                             setTriacLeve(pDF->payload[0],pDF->payload[1]);
                             ret = 0;
+                            breath.total = 0;
                         }
                         else    
                             ret =0xe3;
@@ -60,11 +61,13 @@ void freameAnalysis()
                         
                         break;
                     case CMD_LOAD_BREATH:
-                        if((pDF->payload[0] <= 100) && (pDF->payload[1] >= 1) && (pDF->payload[1] <= 250)) 
+                        if((pDF->payload[0] <= 100) && (pDF->payload[1] >= 1) && ((pDF->payload[1] <= 125)||(pDF->payload[1] == 255))) 
                         {
                             ret = 0;
                             breath.end = pDF->payload[0];
-                            breath.total = (pDF->payload[1]<<1) + 1 ; 
+                            if(pDF->payload[1] <= 125)
+                             breath.total = (pDF->payload[1]<<1) + 1; 
+                            else if(pDF->payload[1] == 255) breath.total = pDF->payload[1];
                         }
                         else
                             ret = 1;
@@ -82,7 +85,8 @@ void freameAnalysis()
             }
             else
             {   //校验错误
-                
+                buff[0] = 0x45;buff[1] = 0x52;buff[2] = 0x52;buff[3] = 0x21;
+                uart1_send_buff(buff,4);
             }
             break;
         }
@@ -141,7 +145,7 @@ void Task_Load_Breath()
         tick_800ms = 0;
         if(breath.total)
         {
-            breath.total--;
+            if(breath.total <= 251)breath.total--;
             if((triac.onoff == 1)&&(triac.level > 50))  breath.dir = 0;   
             else breath.dir = 1;  
             uint8_t level=0;

@@ -8,6 +8,7 @@
 #include "pwm_comm.h"
 #include "stm8s_uart1.h"
 #include "protocol.h"
+#include "stm8s_iwdg.h"
 
 static void CLK_Init(void); //系统时钟初始化
 static void KK_GPIO_INIT(void);  // DIO不需要开启外部时钟
@@ -17,7 +18,7 @@ static void TaskProcess(void);
 static void TaskRemarking(void);
 
 
-pKeyLineUpdataCallback keyLineUpdataCallback(void);
+void keyLineUpdataCallback(void);
 uint8_t tr_delay;				 //K线信号转化输出延时
 void Task_IOtest(void);
 void Task_TRIO_handle(void);
@@ -65,8 +66,6 @@ static void KK_GPIO_INIT(void)  // DIO不需要开启外部时钟
 
 	GPIO_Init(GPIOC,GPIO_PIN_7,GPIO_MODE_OUT_PP_LOW_FAST);  // PC7: 控制光耦，高电平有效，初始化低电平
 	GPIO_WriteLow(GPIOC, GPIO_PIN_7); //关闭光耦
-	GPIO_Init(GPIO_TR_OP_PORT,KEY_LINE_PIN,GPIO_MODE_OUT_PP_LOW_SLOW);  // PC6: 转换的K线输出信号
-	GPIO_WriteHigh(GPIO_TR_OP_PORT, KEY_LINE_PIN); //输出高电平
 	disableInterrupts();
 	GPIO_Init(GPIOC, GPIO_PIN_5, GPIO_MODE_IN_PU_IT); // Pc5: 上拉输入，使能中断
 	//GPIO_ExternalPullUpConfig(GPIOC, GPIO_PIN_5, ENABLE); // 这句可以不使用，上面  上拉输入，已经 使能 上拉电阻
@@ -83,10 +82,10 @@ static void KK_GPIO_INIT(void)  // DIO不需要开启外部时钟
 static void KK_Interrupt_INIT(void)
 {
     disableInterrupts();
-	ITC_SetSoftwarePriority(ITC_IRQ_TIM4_OVF, ITC_PRIORITYLEVEL_3);
+	ITC_SetSoftwarePriority(ITC_IRQ_TIM4_OVF, ITC_PRIORITYLEVEL_1);
 	ITC_SetSoftwarePriority(ITC_IRQ_TIM2_OVF, ITC_PRIORITYLEVEL_2);
-	ITC_SetSoftwarePriority(ITC_IRQ_PORTC, ITC_PRIORITYLEVEL_3);
-	ITC_SetSoftwarePriority(ITC_IRQ_UART1_RX, ITC_PRIORITYLEVEL_0);
+	ITC_SetSoftwarePriority(ITC_IRQ_PORTC, ITC_PRIORITYLEVEL_2);
+	ITC_SetSoftwarePriority(ITC_IRQ_UART1_RX, ITC_PRIORITYLEVEL_1);
     enableInterrupts();
 }
 static void KK_UART1_INIT(void)
@@ -115,13 +114,21 @@ void main(void)
 {
 	CLK_Init();                                   //系统时钟初始化
 	KK_GPIO_INIT();
+	keyLine_init(keyLineUpdataCallback);
 	KK_UART1_INIT();
 	KK_TIME2_INIT();
 	KK_Timer4_Init();							  //10ms时基
 	KK_Interrupt_INIT();                          //优先级
-	
+	KK_Timer1_Init();
+	/* IWDG Configuration */
+	IWDG->KR = IWDG_KEY_ENABLE;	
+	IWDG->KR = (uint8_t)IWDG_WriteAccess_Enable;	//unlock
+	IWDG->PR = (uint8_t)IWDG_Prescaler_256;			//
+	IWDG->RLR = 0xcc;								//800ms timeout
+	IWDG->KR = IWDG_KEY_REFRESH;					//lock
 	while(1)
 	{
+		IWDG->KR = IWDG_KEY_REFRESH;				//喂狗
 		TaskProcess();
 	}
 }
@@ -195,7 +202,7 @@ void Task_IOtest(void)
 	GPIO_WriteReverse(GPIOD,GPIO_PIN_4);
 }
 
-pKeyLineUpdataCallback keyLineUpdataCallback(void)
+void keyLineUpdataCallback(void)
 {
 	tr_delay = 10;
 	GPIO_WriteLow(GPIO_TR_OP_PORT,GPIO_TR_OP_PIN);
