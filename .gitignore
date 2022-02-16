@@ -1,3 +1,5 @@
 /Debug/List
 /Debug/Obj
 /settings
+*.out
+*.dep
