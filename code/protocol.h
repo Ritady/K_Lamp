@@ -11,6 +11,7 @@
 #define CMD_GET_VERSION             0X1022
 #define CMD_LOAD_BLINK              0X1035
 #define CMD_LOAD_BREATH             0X1036
+#define CMD_ACK_LEVEL               0X10
 
 #define DIR_FRAME_Z3_TO_DEVICE      0X01
 #define DIR_FRAME_DEVICE_TO_Z3      0X00

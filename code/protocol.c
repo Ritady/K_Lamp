@@ -120,7 +120,7 @@ void code_buffer_to_send(uint8_t* payload,uint8_t len,uint8_t seq)
         sendbuff[length++] = payload[i];
     }
     sendbuff[2] = length + 2;
-    checksum = checksum_calculate(sendbuff,length);
+    checksum = checksum_calculate(sendbuff,length+2);
     sendbuff[length++] = (uint8_t)(checksum>>8);
     sendbuff[length++] = (uint8_t)checksum;
     uart1_send_buff(sendbuff,length);
