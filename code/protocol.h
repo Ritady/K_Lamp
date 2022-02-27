@@ -38,9 +38,12 @@ typedef struct
 
 typedef struct 
 {
-    uint8_t total;
-    uint8_t dir;
-    uint8_t end;
+    uint8_t recover;        //结束的level
+    uint8_t min;            //呼吸时最小亮度
+    uint8_t max;            //呼吸时最大亮度
+    uint8_t mode;           //模式 0-闪烁 1-呼吸
+    uint8_t time;           //速率
+    uint8_t times;          //次数          
 }Breath_st;
 
 void Task_AnalysisFrame(void);

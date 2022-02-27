@@ -8,8 +8,6 @@ void rxbuffer_init()
     rxdata.frame = 0;
 }
 
-
-
 void uart1_send_buff(uint8_t* buff,uint8_t length)
 {
     uint8_t i = 0;
