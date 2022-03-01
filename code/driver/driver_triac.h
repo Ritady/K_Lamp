@@ -42,4 +42,7 @@ uint8_t getLineFreq(void);
 void setCommMode(COMM_MODE_ENUM mode);
 COMM_MODE_ENUM getCommMode(void);
 void setTriacLeve(uint8_t level,uint8_t trainsition);
+
+uint16_t getTriacCurrentContinue(void);
+uint8_t getLevelFromeContinue(uint16_t triac_continue);
 #endif

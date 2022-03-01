@@ -93,7 +93,7 @@ static void KK_UART1_INIT(void)
 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_UART1, ENABLE); // 打开外设时钟
 	UART1_Init((u32)9600, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO, UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
 	UART1_ITConfig(UART1_IT_RXNE_OR, ENABLE);  //接收中断  使能
-	UART1_ITConfig(UART1_IT_TXE, DISABLE);     // 发送寄存器空中断  禁能
+	UART1_ITConfig(UART1_IT_TXE, DISABLE);     //发送寄存器空中断  禁能
 	UART1_ITConfig(UART1_IT_TC, DISABLE);      //发送完成中断  禁能
 	UART1_Cmd(ENABLE);                         //启动UART1
 }

@@ -13,14 +13,14 @@ void KK_TIME2_INIT(void)
 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_TIMER2,ENABLE); // 打开外设时钟
 
 	TIM2_ClearFlag(TIM2_FLAG_UPDATE);            //清除更新标志位
-	TIM2_TimeBaseInit(TIM2_PRESCALER_4,60000);  // 1分频，
+	TIM2_TimeBaseInit(TIM2_PRESCALER_4,60000);   // 1分频，
 	TIM2_ARRPreloadConfig(ENABLE);               // 预装载值更新时，等待更新才生效
 	TIM2_SelectOnePulseMode(TIM2_OPMODE_REPETITIVE); // 连续计数不停止
 	TIM2_UpdateDisableConfig(DISABLE);           //允许事件更新，中断才能触发
 	TIM2_ITConfig(TIM2_IT_UPDATE,ENABLE);        //计数溢出中断
 
-	//TIM2_Cmd(ENABLE);                            //启动定时器
-    triac.line_check_status = 50;             // powerLine.status = 50;  
+	//TIM2_Cmd(ENABLE);                          //启动定时器
+    triac.line_check_status = 50;                // powerLine.status = 50;  
 }
 
 void KK_Timer2_Change(u16 Time_us)            	 // 0--1000
@@ -45,12 +45,12 @@ INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler, 5)
      it is recommended to set a breakpoint on the following instruction.
   */
     if ((GPIO_ReadInputData(GPIOC) & GPIO_PIN_5) != 0x00) return;
-    if(triac.line_check_status)         //if(powerLine.status)
+    if(triac.line_check_status)                  //if(powerLine.status)
     {
-        triac.line_check_status--;      //powerLine.status--;
+        triac.line_check_status--;               //powerLine.status--;
         if(triac.line_check_status == 2)
         {
-            triac.cntMs = 0;            //powerLine.cntMs = 0;
+            triac.cntMs = 0;                     //powerLine.cntMs = 0;
         }
         else if(triac.line_check_status == 0)
         {
@@ -65,7 +65,7 @@ INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler, 5)
     }
     else
     {
-        if(triac.cntMs < 15) return;        //防止干扰
+        if(triac.cntMs < 15) return;            //防止干扰
         if(triac.cntMs > 22) 
         {
             triac.cntMs = 0;
@@ -98,7 +98,7 @@ INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler, 5)
             TIM2_Cmd(DISABLE);
         }   
     }   
-    GPIO_WriteReverse(GPIOD,GPIO_PIN_3);            //for debug
+ 
 }
 
 /**
@@ -145,7 +145,25 @@ void IncMsCntForTriac(void)
 {
     triac.cntMs++;
 }
-
+uint16_t getTriacCurrentContinue(void)
+{
+    return triac.current_continue;
+}
+/**
+ * @brief  通过导通角计算百分比
+ * @param  导通角
+ * @retval 百分比
+ */
+uint8_t getLevelFromeContinue(uint16_t triac_continue)
+{
+    int8_t ret_level =0;
+    if(triac.zero_cycle <= HARDWARTE_ZERO_CHECK_DELAY) return 0;
+    if(triac.onoff == 0) return 0;
+    ret_level = 100 - ((uint32_t)triac_continue*100/(triac.zero_cycle - HARDWARTE_ZERO_CHECK_DELAY));
+    if(ret_level <= 0) ret_level = 1;
+    else if(ret_level > 100) ret_level = 100;
+    return ret_level;
+}
 void setTriacLeve(uint8_t level,uint8_t trainsition)
 {
     uint16_t dealt;

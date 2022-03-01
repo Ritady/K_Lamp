@@ -7,7 +7,7 @@ uint8_t framebuff[32];
 Breath_st breath;
 void freameAnalysis()
 {
-    static uint8_t buff[8];
+    static uint8_t buff[20];
     static uint8_t seq;
     freame_st* pFreame;
     uint8_t index=0;
@@ -29,11 +29,11 @@ void freameAnalysis()
                 switch(pDF->cmd)
                 {
                     case CMD_SET_BRIGHT:
-                        if((pDF->payload[0] <= 100)&&(pDF->payload[1] <= 50))
+                        if(pDF->payload[0] <= 100)
                         {
                             setTriacLeve(pDF->payload[0],pDF->payload[1]);
                             ret = 0;
-                            breath.total = 0;
+                            breath.times = 0;
                         }
                         else    
                             ret =0xe3;
@@ -57,23 +57,29 @@ void freameAnalysis()
                         buff[0] = length;
                         code_buffer_to_send(buff,length,seq);
                         break;
-                    case CMD_LOAD_BLINK:
-                        
+                    case CMD_LOAD_STOP:
+                        uint16_t c = getTriacCurrentContinue();
+                        buff[5] = getLevelFromeContinue(c);
+                        setTriacLeve(buff[5],0);
+                        buff[length++] = 0;             //payload length
+                        buff[length++] = 0;             //channel 
+                        buff[length++] = (uint8_t)(CMD_LOAD_STOP>>8);
+                        buff[length++] = (uint8_t)CMD_LOAD_STOP;
+                        buff[length++] = 0;             //ret
+                        buff[length++] = buff[5];
+                        buff[0] = length;
+                        code_buffer_to_send(buff,length,seq);
                         break;
                     case CMD_LOAD_BREATH:
-                        if((pDF->payload[0] <= 100) && (pDF->payload[1] > 0)        //恢复后的有效level
-                         && (pDF->payload[1] <= 70)                                 //呼吸的最小亮度
+                        if((pDF->payload[0] <= 100)                                  //恢复后的有效level
+                         && (pDF->payload[1] <= 70)                                  //呼吸的最小亮度
                          && (pDF->payload[2] <= 100) && (pDF->payload[2] -pDF->payload[1] >= 30)
-                         && (pDF->payload[3] <= 1)                                  //mode 0:闪烁 1：呼吸
-                         && (pDF->payload[4] <= 250)                                //速率
-                         && (pDF->payload[35] <= 250))                              //次数
+                         && (pDF->payload[3] <= 1)                                   //mode 0:闪烁 1：呼吸
+                         && (pDF->payload[4] <= 250)                                 //速率
+                         && ((pDF->payload[5] <= 250) || (pDF->payload[5] == 0xff))) //次数
                         {
                             ret = 0;
                             memcpy(&breath,&pDF->payload[0],sizeof(breath));
-                            breath.end = pDF->payload[0];
-                            if(pDF->payload[1] <= 125)
-                             breath.total = (pDF->payload[1]<<1) + 1; 
-                            else if(pDF->payload[1] == 255) breath.total = pDF->payload[1];
                         }
                         else
                             ret = 1;
@@ -145,16 +151,17 @@ void Task_AnalysisFrame(void)
 
 void Task_Load_Breath()
 {
-    static uint8_t times = 0;
+    static uint8_t time = 0;
     static uint8_t dir = 0;
+    static uint8_t cnt = 0;
     uint8_t targ_level = 0;
     if(breath.times)
     {
-        if((dir & 0x80) == 0)
+        if((dir & 0x80) == 0)                               //初始化blink参数（方向、速率）
         {
             dir |= 0x80;
-            times = breath.time;
-            if(breath.mode == 0)
+            time = breath.time;
+            if(breath.mode == 0)                            //闪烁
             {
                 if(triac.onoff == 1)
                 {
@@ -168,7 +175,7 @@ void Task_Load_Breath()
                 }
                 setTriacLeve(targ_level,0);
             }
-            else
+            else                                            //呼吸
             {
                 if((triac.onoff == 1)&&(triac.level < ((breath.max - breath.min)>>1)+breath.min))
                 {
@@ -180,34 +187,40 @@ void Task_Load_Breath()
                     dir |= 0x01;
                     targ_level = breath.min;
                 } 
-                setTriacLeve(targ_level,times);
+                setTriacLeve(targ_level,time);
             }
         }
-        if(times == 0)
+        if(time == 0)                                      
         {
-            times = breath.time;
-            breath.times--;
-            if(breath.mode == 0)        //闪烁模式
+            time = breath.time;
+            if(cnt++ == 1)                                  //一个周期计数
             {
-                if(dir&0x01) targ_level = 0;
-                else targ_level = 80;
-                setTriacLeve(targ_level,0);
+                if(breath.times <= 250)breath.times--;
+                cnt = 0;
             }
-            else                        //呼吸模式
+            if(breath.mode == 0)                            //闪烁模式
+            {
+                if(dir & 0x01) targ_level = 0;
+                else targ_level = 80;
+                if(breath.times == 0)  setTriacLeve(breath.recover,0);  //闪烁结束恢复recover
+                else setTriacLeve(targ_level,0);
+            }
+            else                                            //呼吸模式
             {
                 if(dir & 0x01) targ_level = breath.max;
                 else targ_level = breath.min;
-                setTriacLeve(targ_level,times);
+                if(breath.times == 0) setTriacLeve(breath.recover,time);//呼吸结束恢复recover
+                else setTriacLeve(targ_level,time);
             }
             dir ^= 0x01;
         }
-        else times--;
+        else time--;
     }
     else
     {
         dir = 0;
-        times = 0;
-        setTriacLeve(breath.recover,1);
+        time = 0;
+        cnt = 0;
     }
 }
 
