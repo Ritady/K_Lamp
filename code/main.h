@@ -2,7 +2,7 @@
 #define _MAIN_H
 #include "stm8s.h"
 
-#define FIRMWARE_VERSION    0X10
+#define FIRMWARE_VERSION    0X11
 
 
 #endif

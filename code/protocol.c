@@ -59,15 +59,14 @@ void freameAnalysis()
                         break;
                     case CMD_LOAD_STOP:
                         uint16_t c = getTriacCurrentContinue();
-                        buff[5] = getLevelFromeContinue(c);
-                        setTriacLeve(buff[5],0);
                         buff[length++] = 0;             //payload length
                         buff[length++] = 0;             //channel 
                         buff[length++] = (uint8_t)(CMD_LOAD_STOP>>8);
                         buff[length++] = (uint8_t)CMD_LOAD_STOP;
                         buff[length++] = 0;             //ret
-                        buff[length++] = buff[5];
+                        buff[length++] = getLevelFromeContinue(c);
                         buff[0] = length;
+                        setTriacLeve(buff[5],0);
                         code_buffer_to_send(buff,length,seq);
                         break;
                     case CMD_LOAD_BREATH:
