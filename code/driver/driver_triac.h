@@ -1,3 +1,11 @@
+/*
+ * @Author: your name
+ * @Date: 2022-02-07 20:25:19
+ * @LastEditTime: 2022-04-20 15:03:40
+ * @LastEditors: Please set LastEditors
+ * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @FilePath: \K_Lamp\code\driver\driver_triac.h
+ */
 #ifndef _DRIVER_TRIAC_H
 #define _DRIVER_TRIAC_H
 #include "stm8s.h"
@@ -41,7 +49,7 @@ void IncMsCntForTriac(void);
 uint8_t getLineFreq(void);
 void setCommMode(COMM_MODE_ENUM mode);
 COMM_MODE_ENUM getCommMode(void);
-void setTriacLeve(uint8_t level,uint8_t trainsition);
+void setTriacLeve(uint8_t level,uint8_t min,uint8_t trainsition);
 
 uint16_t getTriacCurrentContinue(void);
 uint8_t getLevelFromeContinue(uint16_t triac_continue);

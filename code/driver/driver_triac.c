@@ -87,7 +87,11 @@ INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler, 5)
                 else
                 {
                     triac.current_continue = triac.continue_time;
-                    if(triac.level == 0) triac.onoff = SWITCH_ST_OFF;
+                    if(triac.level == 0) 
+                    {
+                        triac.onoff = SWITCH_ST_OFF;
+                        //triac.current_continue = triac.zero_cycle - HARDWARTE_ZERO_CHECK_DELAY;
+                    }
                 }
                 if(triac.current_continue < 10) triac.current_continue = 10;
     	        KK_Timer2_Change(triac.current_continue);
@@ -164,27 +168,49 @@ uint8_t getLevelFromeContinue(uint16_t triac_continue)
     else if(ret_level > 100) ret_level = 100;
     return ret_level;
 }
-void setTriacLeve(uint8_t level,uint8_t trainsition)
+void setTriacLeve(uint8_t level,uint8_t min,uint8_t trainsition)
 {
     uint16_t dealt;
     if(level <= 100)
     { 
         triac.level = level;
         if(triac.onoff == 0) triac.current_continue = triac.zero_cycle - HARDWARTE_ZERO_CHECK_DELAY;
-        if(level) triac.onoff = 1;
-        triac.continue_time = (100 -  triac.level)*((triac.zero_cycle - HARDWARTE_ZERO_CHECK_DELAY)/100);   
+        if(level)
+        {
+            triac.onoff = SWITCH_ST_ON;
+            if(min < 100)
+            {
+                uint16_t temp = (100 -  min)*((triac.zero_cycle - HARDWARTE_ZERO_CHECK_DELAY)/100);
+                if(triac.current_continue > temp) triac.current_continue = temp;
+            } 
+            triac.continue_time = (100 -  triac.level)*((triac.zero_cycle - HARDWARTE_ZERO_CHECK_DELAY)/100);  
+        }
+        else
+        {
+            if(min < 100) triac.continue_time = (100 -  min)*((triac.zero_cycle - HARDWARTE_ZERO_CHECK_DELAY)/100); 
+            else triac.continue_time = triac.zero_cycle - HARDWARTE_ZERO_CHECK_DELAY;
+        }
+        
         if(trainsition > 0)
         {
-            if(triac.continue_time > triac.current_continue)
+            if(triac.continue_time != triac.current_continue)
             {
-                dealt = triac.continue_time - triac.current_continue;
-                triac.continue_step = dealt/10/trainsition;
+                if(triac.continue_time > triac.current_continue)
+                    dealt = triac.continue_time - triac.current_continue;
+                else
+                    dealt = triac.current_continue - triac.continue_time;
+                triac.continue_step = 1 + (dealt/trainsition)/5;             //+1 防止小数计算偏小  /10*2 = /5  20hz过零信号
             }
-            else if(triac.continue_time < triac.current_continue)
-            {
-                dealt = triac.current_continue -triac.continue_time;
-                triac.continue_step = dealt/10/trainsition;
-            }
+            // if(triac.continue_time > triac.current_continue)
+            // {
+            //     dealt = triac.continue_time - triac.current_continue;
+            //     triac.continue_step = dealt/trainsition/10;
+            // }
+            // else if(triac.continue_time < triac.current_continue)
+            // {
+            //     dealt = triac.current_continue -triac.continue_time;
+            //     triac.continue_step = dealt/trainsition/10;
+            // }
             else 
                 triac.continue_step = 0;
         }
@@ -193,7 +219,7 @@ void setTriacLeve(uint8_t level,uint8_t trainsition)
     }
     else
     {
-        triac.onoff = 0;
+        triac.onoff = SWITCH_ST_OFF;
         triac.level = 0;
     }
 }

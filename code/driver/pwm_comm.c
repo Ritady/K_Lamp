@@ -92,7 +92,7 @@ void Task_CaptureSampleTrigger()
 		capture.duty = 0;
 		capture.cycle = 0;
 	}	
-	setTriacLeve(percent,0);
+	setTriacLeve(percent,0xff,0);
 	capture.step = 0;
 	TIM1_ClearFlag(TIM1_FLAG_CC3);
 	TIM1_ClearFlag(TIM1_FLAG_CC4);

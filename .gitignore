@@ -1,5 +1,8 @@
 /Debug/List
 /Debug/Obj
 /settings
+/.vscode
 *.out
 *.dep
+*.pdf
+

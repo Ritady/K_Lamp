@@ -230,5 +230,9 @@ void Task_TRIO_handle(void)
 	TaskRemarking();
     IncMsCntForTriac();
  }
-
+ 
+ uint8_t getSoftVersion()
+ { 
+	 return FIRMWARE_VERSION;
+ }
 

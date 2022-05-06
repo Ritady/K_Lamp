@@ -1,5 +1,5 @@
 #include "protocol.h"
-
+#include "main.h"
 uint16_t checksum_calculate(uint8_t* buff,uint8_t length);
 void code_buffer_to_send(uint8_t* payload,uint8_t len,uint8_t seq);
 uint8_t framebuff[32];
@@ -29,11 +29,11 @@ void freameAnalysis()
                 switch(pDF->cmd)
                 {
                     case CMD_SET_BRIGHT:
-                        if(pDF->payload[0] <= 100)
+                        if((pDF->payload[0] <= 100)&&((pDF->payload[2] <= 90) || (pDF->payload[2] == 0xff)))
                         {
-                            setTriacLeve(pDF->payload[0],pDF->payload[1]);
+                            setTriacLeve(pDF->payload[0],pDF->payload[2],pDF->payload[1]);
                             ret = 0;
-                            breath.times = 0;
+                            breath.times = 0;           //clear breath struct
                         }
                         else    
                             ret =0xe3;
@@ -55,18 +55,20 @@ void freameAnalysis()
                         buff[length++] = 0;             //ret
                         buff[length++] = FIRMWARE_VERSION;
                         buff[0] = length;
+                        if((pFreame->contral & ACK_FLAG_NEED) == 0) break;
                         code_buffer_to_send(buff,length,seq);
                         break;
                     case CMD_LOAD_STOP:
                         uint16_t c = getTriacCurrentContinue();
                         buff[length++] = 0;             //payload length
-                        buff[length++] = 0;             //channel 
+                        buff[length++] = pDF->channel;  //channel 
                         buff[length++] = (uint8_t)(CMD_LOAD_STOP>>8);
                         buff[length++] = (uint8_t)CMD_LOAD_STOP;
                         buff[length++] = 0;             //ret
                         buff[length++] = getLevelFromeContinue(c);
                         buff[0] = length;
-                        setTriacLeve(buff[5],0);
+                        setTriacLeve(buff[5],0xff,0);
+                        if((pFreame->contral & ACK_FLAG_NEED) == 0) break;
                         code_buffer_to_send(buff,length,seq);
                         break;
                     case CMD_LOAD_BREATH:
@@ -87,6 +89,7 @@ void freameAnalysis()
                         buff[length++] = (uint8_t)(CMD_LOAD_BREATH>>8);
                         buff[length++] = (uint8_t)CMD_LOAD_BREATH;
                         buff[length++] = ret;           //ret
+                        if((pFreame->contral & ACK_FLAG_NEED) == 0) break;
                         code_buffer_to_send(buff,length,seq);
                         break;
                     default:
@@ -172,21 +175,21 @@ void Task_Load_Breath()
                      dir |= 0x01;
                      targ_level = 80;
                 }
-                setTriacLeve(targ_level,0);
+                setTriacLeve(targ_level,0xff,0);
             }
             else                                            //呼吸
             {
-                if((triac.onoff == 1)&&(triac.level < ((breath.max - breath.min)>>1)+breath.min))
+                if((triac.onoff == 1)&&(triac.level > ((breath.max - breath.min)>>1)+breath.min))
                 {
                     dir &= 0xfe;
-                    targ_level = breath.max;
+                    targ_level = breath.min;
                 }     
                 else
                 {
                     dir |= 0x01;
-                    targ_level = breath.min;
+                    targ_level = breath.max;
                 } 
-                setTriacLeve(targ_level,time);
+                setTriacLeve(targ_level,0xff,time>>1);
             }
         }
         if(time == 0)                                      
@@ -201,15 +204,15 @@ void Task_Load_Breath()
             {
                 if(dir & 0x01) targ_level = 0;
                 else targ_level = 80;
-                if(breath.times == 0)  setTriacLeve(breath.recover,0);  //闪烁结束恢复recover
-                else setTriacLeve(targ_level,0);
+                if(breath.times == 0)  setTriacLeve(breath.recover,0xff,0);  //闪烁结束恢复recover
+                else setTriacLeve(targ_level,0xff,0);
             }
             else                                            //呼吸模式
             {
-                if(dir & 0x01) targ_level = breath.max;
-                else targ_level = breath.min;
-                if(breath.times == 0) setTriacLeve(breath.recover,time);//呼吸结束恢复recover
-                else setTriacLeve(targ_level,time);
+                if(dir & 0x01) targ_level = breath.min;
+                else targ_level = breath.max;
+                if(breath.times == 0) setTriacLeve(breath.recover,0xff,time>>1);//呼吸结束恢复recover
+                else setTriacLeve(targ_level,0xff,time>>1);
             }
             dir ^= 0x01;
         }

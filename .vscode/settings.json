@@ -1,6 +1,7 @@
 {
     "git.ignoreLimitWarning": true,
     "files.associations": {
-        "stm8s.h": "c"
+        "stm8s.h": "c",
+        "driver_triac.h": "c"
     }
 }
