@@ -105,6 +105,7 @@ INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler, 5)
  
 }
 
+static u16 g_triacHold = 0;
 /**
   * @brief Timer2 Update/Overflow/Break Interrupt routine.
   * @param  None
@@ -117,23 +118,28 @@ INTERRUPT_HANDLER(TIM2_UPD_OVF_BRK_IRQHandler, 13)
     its = TIM2_GetITStatus(TIM2_IT_UPDATE);//its=RESET or SET
     TIM2_ClearITPendingBit(TIM2_IT_UPDATE); //清除中断标志位
     if(its == SET) // 中断发生
-    {    	
+    {    
+        if((triac.level >= 70 || triac.level <= 30)) {
+            g_triacHold = TRIAC_DRIVER_HOLDE_TIME << 1;
+        } else {
+            g_triacHold = TRIAC_DRIVER_HOLDE_TIME;
+        }	
 		if(triac.lum_st == LUM_CALULATE_ST_HALF_1)
 		{
             GPIO_WriteHigh(GPIOC, GPIO_PIN_7); //打开光耦
-		    KK_Timer2_Change(TRIAC_DRIVER_HOLDE_TIME);
+		    KK_Timer2_Change(g_triacHold);
             triac.lum_st = LUM_CALULATE_ST_HALF_2;
 		}
 		else if(triac.lum_st == LUM_CALULATE_ST_HALF_2)
 		{
             GPIO_WriteLow(GPIOC,GPIO_PIN_7); //关闭光耦
-            KK_Timer2_Change(triac.zero_cycle - TRIAC_DRIVER_HOLDE_TIME);
+            KK_Timer2_Change(triac.zero_cycle - g_triacHold);
             triac.lum_st = LUM_CALULATE_ST_HALF_3;
 		}
         else if(triac.lum_st == LUM_CALULATE_ST_HALF_3)
         {
             GPIO_WriteHigh(GPIOC, GPIO_PIN_7); //打开光耦
-		    KK_Timer2_Change(TRIAC_DRIVER_HOLDE_TIME);
+		    KK_Timer2_Change(g_triacHold);
             triac.lum_st = LUM_CALULATE_ST_HALF_4;
         }
         else 
